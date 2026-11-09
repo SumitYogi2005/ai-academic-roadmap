@@ -15,4 +15,4 @@ Pillow==11.1.0
 pytesseract==0.3.13
 python-dateutil==2.9.0
 email-validator==2.2.0
-bson==0.5.10
+

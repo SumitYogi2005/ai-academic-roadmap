@@ -12,11 +12,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.core.config import settings
-from app.core.logging_config import configure_logging
+from app.core.logging_config import setup_logging
 from app.db.database import lifespan
 from app.api.routes import health, auth, users, documents, roadmaps, planner, progress, ai_assistant
 
-configure_logging()
+setup_logging()
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
