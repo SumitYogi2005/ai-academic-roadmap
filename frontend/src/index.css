@@ -4,32 +4,39 @@
   --primary: #4f46e5;
   --primary-dark: #4338ca;
   --secondary: #7c3aed;
-  --bg: #f9fafb;
-  --text: #111827;
   --success: #10b981;
   --warning: #f59e0b;
   --danger: #ef4444;
+  --bg: #f9fafb;
+  --card: #ffffff;
   --border: #e5e7eb;
-}
-
-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #f9fafb;
-  color: #111827;
-  margin: 0;
-  padding: 0;
+  --text: #111827;
+  --text-muted: #6b7280;
 }
 
 * {
   box-sizing: border-box;
 }
 
-/* React Flow overrides */
-.react-flow__node {
-  border-radius: 8px;
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Custom scrollbar */
+#root {
+  min-height: 100vh;
+}
+
+/* React Flow canvas */
+.react-flow__node {
+  font-family: inherit;
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -43,46 +50,4 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
-}
-
-/* Transitions */
-.transition-all {
-  transition: all 0.2s ease;
-}
-
-/* Chat bubbles */
-.prose {
-  max-width: none;
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease forwards;
-}
-
-/* Toast animations */
-@keyframes slideInRight {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes slideOutRight {
-  from { transform: translateX(0); opacity: 1; }
-  to { transform: translateX(100%); opacity: 0; }
-}
-
-.toast-enter {
-  animation: slideInRight 0.3s ease forwards;
-}
-.toast-exit {
-  animation: slideOutRight 0.3s ease forwards;
 }

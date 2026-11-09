@@ -1,85 +1,93 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { GraduationCap, Lock, Mail } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { Link } from 'react-router-dom';
-import { z } from 'zod';
-import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
-import { useLogin } from '../../hooks/useAuth';
-
-const schema = z.object({
-  email: z.string().email('Please enter a valid email'),
-  password: z.string().min(1, 'Password is required'),
-});
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { GraduationCap, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { useAuthStore } from '../../store/authStore'
+import apiClient from '../../lib/axios'
 
 export default function LoginPage() {
-  const { mutate: login, isPending, error } = useLogin();
+  const navigate = useNavigate()
+  const login = useAuthStore((s) => s.login)
+  const [form, setForm] = useState({ email: '', password: '' })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [showPw, setShowPw] = useState(false)
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    resolver: zodResolver(schema),
-  });
+  const handleChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
 
-  const onSubmit = (values) => {
-    login(values);
-  };
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      const { data } = await apiClient.post('/api/v1/auth/login', form)
+      const { access_token, user } = data.data
+      login(user, access_token)
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Login failed. Please check your credentials.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center mb-3 shadow-lg shadow-indigo-200">
-            <GraduationCap size={24} className="text-white" />
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-indigo-600 rounded-2xl mb-4">
+            <GraduationCap size={28} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
-          <p className="text-gray-500 text-sm mt-1">Sign in to your account</p>
+          <p className="text-gray-600 mt-1">Sign in to your account</p>
         </div>
 
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
           {error && (
-            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
-              {error.response?.data?.detail || 'Invalid email or password. Please try again.'}
+            <div className="flex items-center gap-2 p-3 mb-5 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              <AlertCircle size={16} /> {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <Input
-              label="Email"
-              type="email"
-              placeholder="you@example.com"
-              leftIcon={<Mail size={16} />}
-              error={errors.email?.message}
-              {...register('email')}
-            />
-            <Input
-              label="Password"
-              type="password"
-              placeholder="••••••••"
-              leftIcon={<Lock size={16} />}
-              error={errors.password?.message}
-              {...register('password')}
-            />
-
-            <div className="flex justify-end">
-              <a href="#" className="text-xs text-indigo-600 hover:underline">
-                Forgot password?
-              </a>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
+              <input
+                type="email" name="email" value={form.email} onChange={handleChange} required
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="you@example.com"
+              />
             </div>
 
-            <Button type="submit" className="w-full" loading={isPending} size="md">
-              Sign In
-            </Button>
-          </form>
-        </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+              <div className="relative">
+                <input
+                  type={showPw ? 'text' : 'password'} name="password" value={form.password}
+                  onChange={handleChange} required minLength={8}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent pr-10"
+                  placeholder="••••••••"
+                />
+                <button type="button" onClick={() => setShowPw((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
 
-        <p className="text-center text-sm text-gray-600 mt-4">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-indigo-600 font-medium hover:underline">
-            Sign up free
-          </Link>
-        </p>
+            <button type="submit" disabled={loading}
+              className="w-full py-2.5 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+              {loading ? 'Signing in…' : 'Sign in'}
+            </button>
+          </form>
+
+          <p className="text-center text-sm text-gray-600 mt-6">
+            Don&apos;t have an account?{' '}
+            <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-700">
+              Create one
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
-  );
+  )
 }
